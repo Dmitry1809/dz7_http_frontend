@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "SET NODE_OPTIONS=--openssl-legacy-provider && webpack serve --mode development",
-    "build": "SET NODE_OPTIONS=--openssl-legacy-provider && webpack --mode production",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider webpack serve --mode development",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production",
     "lint": "eslint .",
     "test": "jest --passWithNoTests",
     "coverage": "jest --coverage",
