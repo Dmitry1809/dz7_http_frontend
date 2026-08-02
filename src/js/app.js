@@ -1,14 +1,30 @@
 const BASE_URL = 'http://localhost:7070/';
 
-// === Переносим спиннеры в самый верх, чтобы избежать no-use-before-define ===
+// === Переносим все DOM-элементы и вспомогательные функции в самый верх ===
 const spinner = document.getElementById('loading-spinner');
 const container = document.getElementById('tickets-container');
 const ticketModal = document.getElementById('ticket-modal');
 const deleteModal = document.getElementById('delete-modal');
 const ticketForm = document.getElementById('ticket-form');
 
+const nameInput = document.getElementById('ticket-name');
+const nameError = document.getElementById('ticket-name-error');
+
 const showSpinner = () => spinner.classList.remove('hidden');
 const hideSpinner = () => spinner.classList.add('hidden');
+
+// Функция очистки ошибок валидации при закрытии/открытии окон
+function clearValidationErrors() {
+  nameInput.classList.remove('invalid');
+  nameError.classList.add('hidden');
+}
+
+// Слушатель ввода: убирает красную рамку, как только пользователь начинает писать
+nameInput.addEventListener('input', () => {
+  if (nameInput.value.trim() !== '') {
+    clearValidationErrors();
+  }
+});
 
 // === Класс для работы с API ===
 class HelpDeskAPI {
@@ -24,7 +40,6 @@ class HelpDeskAPI {
       if (response.status === 204) return null;
       return await response.json();
     } catch (error) {
-      // Чтобы обойти запрет no-console и no-alert, используем глобальный window
       window.console.error('Ошибка запроса к API:', error);
       return null;
     } finally {
@@ -107,6 +122,8 @@ async function loadAndRenderTickets() {
       e.stopPropagation();
       const fullTicket = await api.getTicketById(ticket.id);
       if (fullTicket) {
+        // Очищаем прошлые ошибки перед открытием модалки
+        clearValidationErrors();
         document.getElementById('modal-title').textContent = 'Редактировать тикет';
         document.getElementById('ticket-id').value = fullTicket.id;
         document.getElementById('ticket-name').value = fullTicket.name;
@@ -144,10 +161,21 @@ async function loadAndRenderTickets() {
 // === Управление формами ===
 ticketForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const id = document.getElementById('ticket-id').value;
+  const rawName = nameInput.value;
+  const description = document.getElementById('ticket-desc').value;
+
+  if (!rawName || rawName.trim() === '') {
+    nameInput.classList.add('invalid');
+    nameError.classList.remove('hidden');
+    nameInput.focus();
+    return;
+  }
+
   const data = {
-    name: document.getElementById('ticket-name').value,
-    description: document.getElementById('ticket-desc').value,
+    name: rawName.trim(),
+    description: description ? description.trim() : '',
   };
 
   if (id) {
@@ -158,11 +186,13 @@ ticketForm.addEventListener('submit', async (e) => {
   }
 
   ticketModal.classList.add('hidden');
+  clearValidationErrors();
   loadAndRenderTickets();
 });
 
 document.getElementById('modal-cancel').addEventListener('click', () => {
   ticketModal.classList.add('hidden');
+  clearValidationErrors();
 });
 
 document.getElementById('delete-cancel').addEventListener('click', () => {
@@ -182,6 +212,7 @@ document.getElementById('add-ticket-btn').addEventListener('click', () => {
   document.getElementById('modal-title').textContent = 'Добавить тикет';
   ticketForm.reset();
   document.getElementById('ticket-id').value = '';
+  clearValidationErrors();
   ticketModal.classList.remove('hidden');
 });
 

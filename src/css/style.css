@@ -26,3 +26,18 @@ body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 
 
 /* Спиннер загрузки */
 .spinner { text-align: center; padding: 10px; font-weight: bold; color: #007bff; }
+
+/* Стили для валидации */
+.form-group input.invalid {
+  border-color: #dc3545 !important;
+  background-color: #fff8f8;
+}
+.error-message {
+  color: #dc3545;
+  font-size: 0.8em;
+  margin-top: 4px;
+  display: block;
+}
+.hidden {
+  display: none !important;
+}
